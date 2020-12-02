@@ -1,14 +1,15 @@
 ---
 title: 'Your Title Here'
-author: "Don Francisco"
-date: "November 1, 2020"
+author: "Leeza Sergeeva"
+date: "November 29, 2020"
 output: pdf_document
 csl: bioinformatics.csl
 bibliography: references.bib
 params:
   gff_file_path: "/data/sars_vcf_analysis/02_genome_reference/sars_refgenome_annotation.gff"
   vcf_dir_path: "data/11_vcf_output_for_R"
-  sra_runtable_path: "data/00_sra_runtable/SraRunTable_PRJNA656695_short_example.txt"
+  sra_runtable_path: "data/00_sra_runtable/SraRunTable_TX_CA.txt"
+  chosen_date: "20201130"
 ---
 
 ```{r setup, include = FALSE}
@@ -19,10 +20,24 @@ knitr::opts_chunk$set(echo = FALSE,
 ```
 
 # Background and Overview
+This report consists of two parts. First part is a variant analysis on compiled SARS-CoV-2 data obtained from two BioProjects on NCBI website. This was an adaptation of the 
+previous SARS-CoV-2 variant analysis [@koyama2020variant]. 
 
 This is a report on SARS-CoV-2, including some variant analysis [@koyama2020variant].
 
+
+
 # Methods
+
+## SARS-CoV-2 Sequences
+
+I downloaded SraRunTables from two BioProjects on NCBI website related to SARS-CoV-2. Here are the links to "TX SARS-CoV-2 Sequencing" BioProject "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA639066" and "Genome sequencing of Severe acute respiratory syndrome coronavirus 2 in California" BioProject "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA629889". Both SraRunTables were downloaded on November 16, 2020 and combined together into one file SraRunTables_TX_CA.txt.
+
+Reference SARS-CoV-2 isolate Wuhan-Hu-1, complete genome sequence was downloaded on October 15, 2020 from NCBI website "https://www.ncbi.nlm.nih.gov/nuccore/NC_045512". 
+
+## Sequence data processing and filtering, from .fastq to .vcf
+
+Through series of executed shell scripts the .fastq files referenced in SraRunTables_TX_CA.txt file were downloaded to external server provide by the University of San Francisco, as well as the SARS-CoV-2 reference genome file, the annotation gff for SARS-CoV-2. Then [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) program processed .fastq files downloaded to validate the quality of the high throughput sequencing datasets [@andrews2012]. Next step used [trimmomatic](http://www.usadellab.org/cms/?page=trimmomatic) function to clean up sequencing data by throwing out bad sequences. With the help of [Burrows-Wheeler Alignment Tool](http://bio-bwa.sourceforge.net/bwa.shtml) reference genome was indexed, and the reads in each of the samples provided were aligned to the reference genome and saved as .sam files [@BWA]. Using [Samtools](https://www.htslib.org/), .sam files were converted to .bam files and sorted by leftmost coordinates. Then each sorted .bam file was processed by [Samtools flagstat](https://www.htslib.org/doc/samtools-flagstat.html) to count number of alignments in each FLAG type, like QC pass, QC fail etc [@SAM]. Using [bcftools mpileup](https://samtools.github.io/bcftools/bcftools.html) on sorted .bam files generate .bcf file that contains genotype likelihoods at each genomic position with coverage and then SNPs are called for each input file saving output of that as .vcf files and filtering out the short variants for the final VCF.  
 
 See the set of tutorials on the [vcfR package website](https://knausb.github.io/vcfR_documentation/index.html).
 
@@ -36,6 +51,9 @@ You may also want to use any of a range of different COVID data packages and dat
 * https://rt.live/
   * `readr::read_csv("https://d14wlfuexuxgcm.cloudfront.net/covid/rt.csv")`
 
+
+
+
 ## Subsections are ok too
 
 # Results and Discussion
@@ -45,6 +63,9 @@ library("vcfR")
 library("ggplot2")
 library("dplyr")
 library("ggthemes")
+library("tidyr")
+library("readr")
+library("ggpubr")
 
 # this loads all function files in the code/functions directory
 function_paths <- list.files("code/functions", full.names = TRUE)
@@ -105,5 +126,63 @@ gene_table %>%
 ```
 
 **Table 1**: Gene names, locations, and lengths in the SARS-CoV-2 genome. Higher SNP counts in the S and N genes may be related to the larger size of these genes.
+
+# Total Number of Deaths In the US States
+``` {r total-deaths-plot, fig.height=12}
+# import new data as .csv from covidtracking.com website using API
+covid_tracking_data <- readr::read_csv(params$covid_data_api)
+  
+# dplyr chains, extract columns needed
+state_death_summary <- covid_tracking_data %>%
+  select(date, state, death, positive, negative, totalTestResults)
+#  tally()
+  
+# number of total deaths by state
+total_state_death <- aggregate(death~state, state_death_summary, sum)
+names(total_state_death)[2] <- 'total_death'
+  
+# reorder data to show the states with the most deaths first
+total_state_death_ordered <- total_state_death[
+  order(total_state_death$total_death, decreasing=TRUE), ]
+
+# make horizontal bar plot with states and total number of deaths
+total_state_death_plot <- ggplot(data = total_state_death_ordered,
+                         aes(x = total_death,
+                             y = reorder(state, total_death))) +
+  geom_col() +
+  labs(title = "Total Number of Deaths per State",
+       x = "Number of Deaths",
+       y = "US State",
+       labels=TRUE)
+#  geom_text(aes(label=total_death))
+
+ggsave(plot = total_state_death_plot,
+       filename = "data/images/total_state_death_plot.png")
+
+total_state_death_plot
+```
+**Figure 2**: The bar plot of states with the total number of Covid-19 related deaths sorted from highest to lowest.
+
+
+# Total Number of Deaths In the US States
+``` {r total-deaths-plot, fig.height=12}
+# import death data using a function state_covid_death with new parameter for date
+state_death_chosen_date_ten <- state_covid_death(params$chosen_date)
+  
+total_state_death_plot <- ggplot(data = state_death_chosen_date_ten, 
+                                 aes(x = death, y = reorder(state, death))) +
+  geom_col() +
+  labs(title = paste("Total Number of Deaths per State as of ", params$chosen_date),
+       x = "Number of Deaths",
+       y = "US State",
+       labels=TRUE) +
+  geom_text(aes(label=death))
+
+ggsave(plot = total_state_death_plot,
+       filename = "data/images/total_state_death_plot_2.png")
+
+total_state_death_plot
+```
+**Figure 2**: Top 10 states in the United States sorted by the total COVID-19 death numbers
 
 # Sources Cited
