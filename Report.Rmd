@@ -1,7 +1,7 @@
 ---
 title: 'Comparing Texas COVID-19 Data To Other US States With High Mortality and Population Density'
 author: "Leeza Sergeeva"
-date: "November 29, 2020"
+date: "December 6, 2020"
 output: pdf_document
 csl: bioinformatics.csl
 bibliography: references.bib
@@ -10,6 +10,7 @@ params:
   vcf_dir_path: "data/11_vcf_output_for_R"
   sra_runtable_path: "data/00_sra_runtable/SraRunTable_TX.txt"
   chosen_date: "20201130"
+  pop_density_data: "data/raw_data/2020_population_density_US.csv"
 ---
 
 ```{r setup, include = FALSE}
@@ -71,6 +72,9 @@ library("ggpmisc")
 library("devtools")
 library("patchwork")
 library("plyr")
+library("png")
+library("gridExtra")
+library("withr")
 
 # this loads all function files in the code/functions directory
 function_paths <- list.files("code/functions", full.names = TRUE)
@@ -129,7 +133,7 @@ sars_cov_2_genes_plot
 ```
 **Figure 1**: N and S genes have more unique SNPs in the set of samples analyzed.
 
-``` {r total-deaths-plot, fig.height=12}
+``` {r total-deaths-plot}
 # import death data using a function state_covid_death
 all_state_data <- all_state_covid_data()
 
@@ -183,7 +187,7 @@ top_state_death_plot
 ```
 **Figure 2**: The bar plot of the top 5 US States (including Texas) with the highest total number of COVID-19 related deaths on given date.
 
-``` {r total-hospital-plot, fig.height=12}
+``` {r total-hospital-plot}
 # import hospitalization data using a function all_state_covid_data
 all_state_data <- all_state_covid_data()
 
@@ -237,7 +241,7 @@ top_state_hospital_plot
 ```
 **Figure 3**: The bar plot of the top 5 US States (including Texas) with the highest cumulative number of COVID-19 related hospitalizations on given date. Note: there is no hospitalization data available for Texas.
 
-``` {r total-positive-plot, fig.height=12}
+``` {r total-positive-plot}
 # import all data using a function all_state_covid_data
 all_state_data <- all_state_covid_data()
 
@@ -339,14 +343,46 @@ two_timeseries_plot_death_test
 
 ``` {r population-and-density-plot}
 # load population data
-population_density_data <- readr::read_csv(
-    "data/raw_data/2020_population_density_US.csv")
+population_density_data <- readr::read_csv(params$pop_density_data)
+
+{
+  # import death data using a function state_covid_death
+  all_state_data <- all_state_covid_data()
+
+  # take the input date and select rows matching it
+  states_data_chosen_date <- all_state_data %>%
+    select(date, state, death) %>%
+    dplyr::filter(`date` == params$chosen_date)
+
+  # reorder data to show the states with the most deaths first
+  state_death_date_ordered <- states_data_chosen_date[
+    order(states_data_chosen_date$death, decreasing = TRUE), ]
+
+  # take top 5 states with the highest mortality for future plotting as list
+  state_death_date_five <- state_death_date_ordered %>% top_n(5)
+
+  # create list to test if Texas is included in the data frame
+  list_state_death_date_five <- as.list(state_death_date_five$state)
+
+  # if TX is not part of the selected states, add TX data to data frame
+  if ("TX" %in% list_state_death_date_five) {
+    state_death_date_five_tx <- state_death_date_five
+    } else {
+      df_tx <- subset(state_death_date_ordered, state == "TX")
+      state_death_date_five_tx <- rbind(state_death_date_five, df_tx)
+    }
+
+  # this list is used in the graphs related to population density
+  list_state_death_date_five_tx <- as.list(state_death_date_five_tx$state)
+
+}
 
 # select top 5 states with highest total deaths at given date
 pop_dens_top_five_states <- population_density_data %>%
   select(State, Density_p_mi2, Pop_2020, LandArea_mi2) %>%
   dplyr::filter(`State` %in% list_state_death_date_five_tx)
 
+require(scales)
 # bar chart to show population density
 pop_dens_top_five_states_plot <- ggplot(
   data = pop_dens_top_five_states,
@@ -359,8 +395,7 @@ pop_dens_top_five_states_plot <- ggplot(
   geom_text(aes(label = Density_p_mi2))
 
 # bar chart to show population density
-pop_total_five_states_plot <- ggplot(
-  data = pop_dens_top_five_states,
+pop_total_five_states_plot <- ggplot(data = pop_dens_top_five_states,
   aes(x = Pop_2020, y = reorder(State, Pop_2020), fill = State)) +
   geom_col(width = 0.8) +
   labs(title = paste0("2020 Total Population For Select US States"),
@@ -368,11 +403,10 @@ pop_total_five_states_plot <- ggplot(
        y = "US State",
        labels = TRUE) +
   geom_text(aes(label = Pop_2020)) +
-  scale_x_continuous(labels = comma)
+  scale_x_continuous(labels = scales::comma)
 
-pop_total_vs_density_plots <-
-  pop_total_five_states_plot /
-  pop_dens_top_five_states_plot + plot_layout(heights = c(10, 10))
+pop_total_vs_density_plots <- (pop_total_five_states_plot /
+  pop_dens_top_five_states_plot + plot_layout(heights = c(10, 10)))
 
 ggsave(plot = pop_total_vs_density_plots,
        filename = paste0("output/figures/top5DeathTX_pop_total_vs_density_plots_
@@ -383,58 +417,65 @@ pop_total_vs_density_plots
 ```
 **Figure 5**: Top graph shows total US population in 2020 for select 5 states that have high number of deaths up to select date. Bottom graph shows population density in 2020 of the related 5 states with the high number of deaths up to selected date.
 
+
 # Tables
 ```{r sars-cov-2-genes-table}
 # An example table to show the length of each gene using its start and end
 gene_table %>%
-  mutate(length = end - start) %>%
-  select(gene_name, start, end, length) %>%
-  knitr::kable(col.names = c("Gene Name",
-                             "Start",
-                             "End",
-                             "Length"))
+mutate(length = end - start) %>%
+select(gene_name, start, end, length) %>%
+knitr::kable(col.names = c("Gene Name",
+                            "Start",
+                            "End",
+                            "Length"),
+               caption = "SARS-CoV-2 Gene Names, Locations, and Lengths")
 ```
-
 **Table 1**: Gene names, locations, and lengths in the SARS-CoV-2 genome. Higher SNP counts in the S and N genes may be related to the larger size of these genes.
+
 
 ``` {r top15-population-density-table}
 
 # load population data
-population_density_data <- readr::read_csv(
-    "data/raw_data/2020_population_density_US.csv")
+population_density_data <- readr::read_csv(params$pop_density_data)
 
 # select top 5 states with highest total deaths at given date
 pop_dens_top_states <- population_density_data %>%
   select(State, Density_p_mi2)
 
-  pop_dens_top_states_ordered <- pop_dens_top_states[
-    order(population_density_data$Density_p_mi2, decreasing = TRUE), ]
+pop_dens_top_states_ordered <- pop_dens_top_states[
+  order(population_density_data$Density_p_mi2, decreasing = TRUE), ]
 
-  pop_dens_top_states_ordered %>%
-    top_n(15) %>%
-    knitr::kable(col.names = c("State",
-                             "Pop Density (p/mi^2)"))
+pop_dens_top_states_ordered <- pop_dens_top_states_ordered %>% top_n(15)
+  
+pop_dens_top_states_ordered %>%
+  knitr::kable(col.names = c("State",
+                             "Pop Density (p/mi^2)"),
+               caption = "Top 15 US States With
+               Highest Population Density in 2020")
 ```
 **Table 2**: Top 15 states with highest population densities in 2020.
+
 
 ``` {r top15-total-population-table}
 
 # load population data
-population_density_data <- readr::read_csv(
-    "data/raw_data/2020_population_density_US.csv")
+population_density_data <- readr::read_csv(params$pop_density_data)
 
 # select top 5 states with highest total deaths at given date
-pop_dens_top_states <- population_density_data %>%
+pop_top_states <- population_density_data %>%
   select(State, Pop_2020)
 
-  pop_dens_top_states_ordered <- pop_dens_top_states[
-    order(population_density_data$Pop_2020, decreasing = TRUE), ]
+pop_top_states_ordered <- pop_top_states[
+  order(population_density_data$Pop_2020, decreasing = TRUE), ]
+
+pop_top_states_ordered <- pop_top_states_ordered %>% top_n(15)
   
-  pop_dens_top_states_ordered %>%
-    top_n(15) %>%
-    knitr::kable(col.names = c("State",
-                             "Population"))
+pop_top_states_ordered %>%
+  knitr::kable(col.names = c("State",
+                             "Population"),
+               caption = "Top 15 US States With Highest Population in 2020")
 ```
 **Table 3**: Top 15 states with highest total population in 2020.
+
 
 # Sources Cited

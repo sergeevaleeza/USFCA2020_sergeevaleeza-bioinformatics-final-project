@@ -28,6 +28,7 @@ RUNTABLE_DIR		:=	data/00_sra_runtable
 SRA_RUNTABLE		:=	$(RUNTABLE_DIR)/SraRunTable_PRJNA656695_short_example.txt
 VCF_FOR_R_DIR		:=	data/11_vcf_output_for_R
 VCF_FOR_R_FILES		:=	$(VCF_FOR_R_DIR)/$(wildcard *.vcf)
+POP_DENSITY_DATA		:= data/raw_data/2020_population_density_US.csv
 
 all: $(FLAGSTATS_FILES) $(FASTQC_FILES) output/Report.pdf
 
@@ -35,8 +36,8 @@ check:
 	Rscript -e "lintr::lint_dir(pattern = rex::rex('.', or('R', 'r', 'Rmd', 'rmd'), end))"
 	find . -name "*.sh" | xargs shellcheck
 
-output/Report.pdf: Report.Rmd references.bib code/14_render_rmd.sh $(R_FUNCTIONS) $(VCF_FOR_R_FILES) $(GENOME_REF_ANN) $(SRA_RUNTABLE)
-	bash code/14_render_rmd.sh $< $(GENOME_REF_ANN) $(VCF_FOR_R_DIR) $(SRA_RUNTABLE) $(CHOSEN_DATE)
+output/Report.pdf: Report.Rmd references.bib code/14_render_rmd.sh $(R_FUNCTIONS) $(VCF_FOR_R_FILES) $(GENOME_REF_ANN) $(SRA_RUNTABLE) $(POP_DENSITY_DATA)
+	bash code/14_render_rmd.sh $< $(GENOME_REF_ANN) $(VCF_FOR_R_DIR) $(SRA_RUNTABLE) $(CHOSEN_DATE) $(POP_DENSITY_DATA)
 
 $(VCF_FOR_R_FILES): code/13_filter_vcf.sh $(VCF_FILES)
 	bash code/13_filter_vcf.sh $(VCF_DIR)/*.vcf
