@@ -12,30 +12,14 @@ library(dplyr)
 library(ggplot2)
 library(grid)
 require(grid)
-#chosen_date <- "20201130"
 
 all_state_covid_data <- function() {
   # import new data as .csv from website API
   covid_tracking_data <- readr::read_csv(
     "https://api.covidtracking.com/v1/states/daily.csv")
-  
-  # dplyr chains, extract date, state and death columns      
+  # dplyr chains, extract date, state and death columns
   all_state_data <- covid_tracking_data %>%
-    select(date, state, death, deathIncrease, positive, positiveIncrease, 
+    select(date, state, death, deathIncrease, positive, positiveIncrease,
            hospitalizedCumulative, hospitalizedIncrease)
-  #tally()
-  
-  # take the input date and select rows matching it     
-  #state_death_chosen_date <- state_death_summary %>%        
-  #  dplyr::filter(`date` == chosen_date)
-  
-  # reorder data to show the states with the most deaths first 
-  #state_death_chosen_date_ordered <- state_death_chosen_date[
-  #  order(state_death_chosen_date$death, decreasing=TRUE), ]
-  
-  # take top 10 states
- # state_death_chosen_date_ten <- state_death_chosen_date_ordered %>%
- #   top_n(10)
-  
   return(all_state_data)
 }

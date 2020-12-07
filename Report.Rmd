@@ -51,7 +51,7 @@ Reference SARS-CoV-2 isolate Wuhan-Hu-1, complete genome sequence was downloaded
 
 ## Sequence data processing and filtering, from .fastq to .vcf files
 
-Through series of executed shell scripts the .fastq files referenced in SraRunTables_TX.txt file were downloaded to external server provide by the University of San Francisco, as well as the SARS-CoV-2 reference genome file, the annotation gff for SARS-CoV-2. Then [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) program processed .fastq files downloaded to validate the quality of the high throughput sequencing data sets [@andrews2012]. Next step used [trimmomatic](http://www.usadellab.org/cms/?page=trimmomatic) function to clean up sequencing data by throwing out bad sequences. With the help of [Burrows-Wheeler Alignment Tool](http://bio-bwa.sourceforge.net/bwa.shtml) reference genome was indexed, and the reads in each of the samples provided were aligned to the reference genome and saved as .sam files [@BWA]. Using [Samtools](https://www.htslib.org/), .sam files were converted to .bam files and sorted by leftmost coordinates. Then each sorted .bam file was processed by [Samtools flagstat](https://www.htslib.org/doc/samtools-flagstat.html) to count number of alignments in each FLAG type, like QC pass, QC fail etc [@SAM]. Using [bcftools mpileup](https://samtools.github.io/bcftools/bcftools.html) on sorted .bam files generate .bcf file that contains genotype likelihoods at each genomic position with coverage and then SNPs are called for each input file saving output of that as .vcf files and filtering out the short variants for the final VCF.  
+Through series of executed shell scripts the .fastq files referenced in SraRunTables_tx.txt file were downloaded to external server provide by the University of San Francisco, as well as the SARS-CoV-2 reference genome file, the annotation gff for SARS-CoV-2. Then [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) program processed .fastq files downloaded to validate the quality of the high throughput sequencing data sets [@andrews2012]. Next step used [trimmomatic](http://www.usadellab.org/cms/?page=trimmomatic) function to clean up sequencing data by throwing out bad sequences. With the help of [Burrows-Wheeler Alignment Tool](http://bio-bwa.sourceforge.net/bwa.shtml) reference genome was indexed, and the reads in each of the samples provided were aligned to the reference genome and saved as .sam files [@BWA]. Using [Samtools](https://www.htslib.org/), .sam files were converted to .bam files and sorted by leftmost coordinates. Then each sorted .bam file was processed by [Samtools flagstat](https://www.htslib.org/doc/samtools-flagstat.html) to count number of alignments in each FLAG type, like QC pass, QC fail etc [@SAM]. Using [bcftools mpileup](https://samtools.github.io/bcftools/bcftools.html) on sorted .bam files generate .bcf file that contains genotype likelihoods at each genomic position with coverage and then SNPs are called for each input file saving output of that as .vcf files and filtering out the short variants for the final VCF.  
 
 See the set of tutorials on the [vcfR package website](https://knausb.github.io/vcfR_documentation/index.html).
 
@@ -133,46 +133,46 @@ sars_cov_2_genes_plot
 # import death data using a function state_covid_death
 all_state_data <- all_state_covid_data()
 
-# take the input date and select rows matching it     
+# take the input date and select rows matching it
 states_data_chosen_date <- all_state_data %>%
   select(date, state, death) %>%
   dplyr::filter(`date` == params$chosen_date)
   
-# reorder data to show the states with the most deaths first 
-state_death_chosen_date_ordered <- states_data_chosen_date[
-  order(states_data_chosen_date$death, decreasing=TRUE), ]
+# reorder data to show the states with the most deaths first
+state_death_date_ordered <- states_data_chosen_date[
+  order(states_data_chosen_date$death, decreasing = TRUE), ]
 
 # take top 5 states with the highest mortality for future plotting as list
-state_death_chosen_date_five <- state_death_chosen_date_ordered %>% top_n(5)
+state_death_date_five <- state_death_date_ordered %>% top_n(5)
 
 # create list to test if Texas is included in the data frame
-list_state_death_chosen_date_five = as.list(
-  state_death_chosen_date_five$state)
+list_state_death_date_five <- as.list(
+  state_death_date_five$state)
 
 # if TX is not part of the selected states, add TX data to data frame
-if ("TX" %in% list_state_death_chosen_date_five){
-  state_death_chosen_date_five_TX <- state_death_chosen_date_five
+if ("TX" %in% list_state_death_date_five) {
+  state_death_date_five_tx <- state_death_date_five
   } else {
-  df_tx <- subset(state_death_chosen_date_ordered, state == "TX")
-  state_death_chosen_date_five_TX <- rbind(state_death_chosen_date_five,df_tx)
+  df_tx <- subset(state_death_date_ordered, state == "TX")
+  state_death_date_five_tx <- rbind(state_death_date_five, df_tx)
   }
 
 # this list is used in the graphs related to population density
-list_state_death_chosen_date_five_TX <- 
-  as.list(state_death_chosen_date_five_TX$state)
+list_state_death_date_five_tx <-
+  as.list(state_death_date_five_tx$state)
 
-# create bar plot showing 5 US states and the number of people who died of 
+# create bar plot showing 5 US states and the number of people who died of
 # COVID-19 or COVID-19 related issues
-top_state_death_plot <- ggplot(data = state_death_chosen_date_five_TX, 
+top_state_death_plot <- ggplot(data = state_death_date_five_tx,
                                  aes(x = death, y = reorder(state, death),
                                      fill = state)) +
   geom_col(width = 0.4) +
-  labs(title = paste("Total Number of Deaths per State as of ", 
+  labs(title = paste("Total Number of Deaths per State as of ",
                      lubridate::ymd(params$chosen_date)),
        x = "Total Number of Dead",
        y = "US State",
-       labels=TRUE) +
-  geom_text(aes(label=death))
+       labels = TRUE) +
+  geom_text(aes(label = death))
 
 # save graph into data/images folder
 ggsave(plot = top_state_death_plot,
@@ -187,45 +187,46 @@ top_state_death_plot
 # import hospitalization data using a function all_state_covid_data
 all_state_data <- all_state_covid_data()
 
-# take the input date and select rows matching it     
+# take the input date and select rows matching it
 states_data_chosen_date <- all_state_data %>%
   select(date, state, hospitalizedCumulative) %>%
   dplyr::filter(`date` == params$chosen_date)
   
-# reorder data to show the states with the most hospitalizations first 
-state_hospital_chosen_date_ordered <- states_data_chosen_date[
-  order(states_data_chosen_date$hospitalizedCumulative, decreasing=TRUE), ]
+# reorder data to show the states with the most hospitalizations first
+state_hospital_date_ordered <- states_data_chosen_date[
+  order(states_data_chosen_date$hospitalizedCumulative, decreasing = TRUE), ]
   
 # take top 5 states with highest total hospitalizations
-state_hospital_chosen_date_five <- state_hospital_chosen_date_ordered %>%
+state_hospital_date_five <- state_hospital_date_ordered %>%
   top_n(5)
 
 # create list to test if Texas is included in the data frame
-list_state_hospital_chosen_date_five = as.list(
-  state_hospital_chosen_date_five$state)
+list_state_hospital_date_five <- as.list(
+  state_hospital_date_five$state)
 
 # if TX is not part of the selected states, add TX data to data frame
-if ("TX" %in% list_state_hospital_chosen_date_five){
-  state_hospital_chosen_date_five_TX <- state_hospital_chosen_date_five
+if ("TX" %in% list_state_hospital_date_five) {
+  state_hospital_date_five_tx <- state_hospital_date_five
   } else {
-  df_tx <- subset(state_hospital_chosen_date_ordered, state == "TX")
-  state_hospital_chosen_date_five_TX <- rbind(state_hospital_chosen_date_five,df_tx)
+  df_tx <- subset(state_hospital_date_ordered, state == "TX")
+  state_hospital_date_five_tx <- rbind(
+    state_hospital_date_five, df_tx)
   }
 
 # create bar plot showing 10 US states and number of people who died of COVID-19
 # or COVID-19 related issues
-top_state_hospital_plot <- ggplot(data = state_hospital_chosen_date_five_TX, 
-                                 aes(x = hospitalizedCumulative, 
+top_state_hospital_plot <- ggplot(data = state_hospital_date_five_tx,
+                                 aes(x = hospitalizedCumulative,
                                      y = reorder(state, hospitalizedCumulative),
                                      fill = state)) +
   geom_col(width = 0.4) +
-  labs(title = paste0("Total Number of Patients Hospitalized due to 
-                      COVID-19 per State as of ", 
+  labs(title = paste0("Total Number of Patients Hospitalized due to
+                      COVID-19 per State as of ",
                       lubridate::ymd(params$chosen_date)),
        x = "Total Number of Hospitalized",
        y = "US State",
-       labels=TRUE) +
-  geom_text(aes(label=hospitalizedCumulative))
+       labels = TRUE) +
+  geom_text(aes(label = hospitalizedCumulative))
 
 # save graph into data/images folder
 ggsave(plot = top_state_hospital_plot,
@@ -240,51 +241,46 @@ top_state_hospital_plot
 # import all data using a function all_state_covid_data
 all_state_data <- all_state_covid_data()
 
-# take the input date and select rows matching it     
+# take the input date and select rows matching it
 states_data_chosen_date <- all_state_data %>%
   select(date, state, positive) %>%
   dplyr::filter(`date` == params$chosen_date)
   
-# reorder data to show the states with the most positive test results first 
-state_positive_chosen_date_ordered <- states_data_chosen_date[
-  order(states_data_chosen_date$positive, decreasing=TRUE), ]
+# reorder data to show the states with the most positive test results first
+state_pos_date_ordered <- states_data_chosen_date[
+  order(states_data_chosen_date$positive, decreasing = TRUE), ]
   
 # take top 5 states with highest total hospitalizations
-state_positive_chosen_date_five <- state_positive_chosen_date_ordered %>%
+state_pos_date_five <- state_pos_date_ordered %>%
   top_n(5)
 
 # create list to test if Texas is included in the data frame
-list_state_positive_chosen_date_five = as.list(
-  state_positive_chosen_date_five$state)
+list_state_pos_date_five <- as.list(
+  state_pos_date_five$state)
 
 # if TX is not part of the selected states, add TX data to data frame
-if ("TX" %in% list_state_positive_chosen_date_five){
-  state_positive_chosen_date_five_TX <- state_positive_chosen_date_five
+if ("TX" %in% list_state_pos_date_five) {
+  state_pos_date_five_tx <- state_pos_date_five
 } else {
-  df_tx <- subset(state_positive_chosen_date_ordered, state == "TX")
-  state_positive_chosen_date_five_TX <- rbind(
-    state_positive_chosen_date_five,df_tx)
-  return(state_positive_chosen_date_five_TX)
+  df_tx <- subset(state_pos_date_ordered, state == "TX")
+  state_pos_date_five_tx <- rbind(
+    state_pos_date_five, df_tx)
+  return(state_pos_date_five_tx)
   }
 
-# select row with Texas data, and add it to the top 5 states data frame
-#df_tx <- subset(state_positive_chosen_date_ordered, state == "TX")
-#state_positive_chosen_date_five_TX <- rbind(
-#  state_positive_chosen_date_five,df_tx)
-
-# create bar plot showing 10 US states and the number of people who 
+# create bar plot showing 10 US states and the number of people who
 # tested positive for COVID-19
-top_state_positive_plot <- ggplot(data = state_positive_chosen_date_five_TX,
+top_state_positive_plot <- ggplot(data = state_pos_date_five_tx,
                                   aes(x = positive,
                                       y = reorder(state, positive),
                                       fill = state)) +
   geom_col(width = 0.4) +
-  labs(title = paste("Total Number of Positive COVID-19 Test Results per 
+  labs(title = paste("Total Number of Positive COVID-19 Test Results per
                      State as of ", lubridate::ymd(params$chosen_date)),
        x = "Total Number of Positive Test Results",
        y = "US State",
-       labels=TRUE) +
-  geom_text(aes(label=positive))
+       labels = TRUE) +
+  geom_text(aes(label = positive))
 
 # save graph into data/images folder
 ggsave(plot = top_state_positive_plot,
@@ -296,49 +292,48 @@ top_state_positive_plot
 **Figure 3**: The bar plot of the top 5 US States (including Texas) with the highest cumulative number of COVID-19 positive test results.
 
 ``` {r increase-death-positive-test-plots}
-# take previously 
+# take previously
 all_state_data <- all_state_covid_data()
 
 # select all rows matching the list of five states with highest deaths
-fiveTX_state_death_increase <- all_state_data %>%
+five_tx_state_death_inc <- all_state_data %>%
   select(date, state, deathIncrease, positiveIncrease) %>%
   group_by(state) %>%
-  dplyr::filter(`state` == list_state_death_chosen_date_five_TX)
+  dplyr::filter(`state` == list_state_death_date_five_tx)
 
 # convert date to format YYYY-MM-DD
-fiveTX_state_death_increase$date <- 
-  lubridate::ymd(fiveTX_state_death_increase$date)
+five_tx_state_death_inc$date <-
+  lubridate::ymd(five_tx_state_death_inc$date)
 
-# first plot of time series of death increase for top 5 states from 
+# first plot of time series of death increase for top 5 states from
 # previous graph of top moralities on given date
-t_plot <- ggplot(data = fiveTX_state_death_increase, 
+t_plot <- ggplot(data = five_tx_state_death_inc,
                  mapping = aes(x = date, y = deathIncrease, color = state)) +
   geom_line() +
   facet_grid(rows = vars(state)) +
   labs(x = "Date", y = "Death Increase") +
-  scale_y_continuous(breaks=c(0, 300, 600, 1000)) +
+  scale_y_continuous(breaks = c(0, 300, 600, 1000)) +
   theme_bw()
 
-# second plot of time series of positive tests increase for top 5 states from 
+# second plot of time series of positive tests increase for top 5 states from
 # previous graph of top moralities on given date
-p_plot <- ggplot(data = fiveTX_state_death_increase, 
+p_plot <- ggplot(data = five_tx_state_death_inc,
                  mapping = aes(x = date, y = positiveIncrease, color = state)) +
   geom_line() +
   facet_grid(rows = vars(state)) +
   labs(x = "Date", y = "Positive Test Increase") +
-  scale_y_continuous(breaks=c(0, 7000, 14000)) +
+  scale_y_continuous(breaks = c(0, 7000, 14000)) +
   theme_bw()
 
-two_timeseries_plot_deathIncrease_positiveIncrease <- 
+two_timeseries_plot_death_test <-
   t_plot / p_plot + plot_layout(heights = c(10, 10))
 
-ggsave(plot = two_timeseries_plot_deathIncrease_positiveIncrease,
+ggsave(plot = two_timeseries_plot_death_test,
        filename = paste0("output/figures/top5DeathTX_two_timeseries_plot_
                          deathIncrease_positiveIncrease_on_",
                          lubridate::ymd(params$chosen_date), ".png"))
 
-two_timeseries_plot_deathIncrease_positiveIncrease
-
+two_timeseries_plot_death_test
 ```
 **Figure 4**: Top graph is a time series plots of mortality increase and bottom graph is a time series of COVID-19 positive tests increase for the top 5 US States (including Texas) with the highest cumulative number of COVID-19 related deaths on given date.
 
@@ -348,43 +343,36 @@ population_density_data <- readr::read_csv(
     "data/raw_data/2020_population_density_US.csv")
 
 # select top 5 states with highest total deaths at given date
-population_density_top_five_states <- population_density_data %>%
+pop_dens_top_five_states <- population_density_data %>%
   select(State, Density_p_mi2, Pop_2020, LandArea_mi2) %>%
-  dplyr::filter(`State` %in% list_state_death_chosen_date_five_TX)
+  dplyr::filter(`State` %in% list_state_death_date_five_tx)
 
 # bar chart to show population density
-population_density_top_five_states_plot <- ggplot(
-  data = population_density_top_five_states,
+pop_dens_top_five_states_plot <- ggplot(
+  data = pop_dens_top_five_states,
   aes(x = Density_p_mi2, y = reorder(State, Density_p_mi2), fill = State)) +
   geom_col(width = 0.8) +
   labs(title = paste("2020 Population Density For Select US States"),
        x = "Population Density (p/mi^2)",
        y = "US State",
-       labels=TRUE) +
-  geom_text(aes(label=Density_p_mi2))
-
-# save graph into data/images folder
-#ggsave(plot = population_density_top_five_states_plot,
-#       filename = paste0("data/images/population_density_
-#                         top_five_states_plot.png"))
-
+       labels = TRUE) +
+  geom_text(aes(label = Density_p_mi2))
 
 # bar chart to show population density
-population_total_top_five_states_plot <- ggplot(
-  data = population_density_top_five_states,
+pop_total_five_states_plot <- ggplot(
+  data = pop_dens_top_five_states,
   aes(x = Pop_2020, y = reorder(State, Pop_2020), fill = State)) +
   geom_col(width = 0.8) +
   labs(title = paste0("2020 Total Population For Select US States"),
        x = "Total Population",
        y = "US State",
-       labels=TRUE) +
-  geom_text(aes(label=Pop_2020)) +
+       labels = TRUE) +
+  geom_text(aes(label = Pop_2020)) +
   scale_x_continuous(labels = comma)
 
-
 pop_total_vs_density_plots <-
-  population_total_top_five_states_plot / 
-  population_density_top_five_states_plot + plot_layout(heights = c(10, 10))
+  pop_total_five_states_plot /
+  pop_dens_top_five_states_plot + plot_layout(heights = c(10, 10))
 
 ggsave(plot = pop_total_vs_density_plots,
        filename = paste0("output/figures/top5DeathTX_pop_total_vs_density_plots_
@@ -416,17 +404,16 @@ population_density_data <- readr::read_csv(
     "data/raw_data/2020_population_density_US.csv")
 
 # select top 5 states with highest total deaths at given date
-population_density_top_states <- population_density_data %>%
+pop_dens_top_states <- population_density_data %>%
   select(State, Density_p_mi2)
 
-  population_density_top_states_ordered <- population_density_top_states[
-    order(population_density_data$Density_p_mi2, decreasing=TRUE), ]
+  pop_dens_top_states_ordered <- pop_dens_top_states[
+    order(population_density_data$Density_p_mi2, decreasing = TRUE), ]
 
-  population_density_top_states_ordered %>%
+  pop_dens_top_states_ordered %>%
     top_n(15) %>%
     knitr::kable(col.names = c("State",
                              "Pop Density (p/mi^2)"))
-    
 ```
 **Table 2**: Top 15 states with highest population densities in 2020.
 
@@ -437,17 +424,16 @@ population_density_data <- readr::read_csv(
     "data/raw_data/2020_population_density_US.csv")
 
 # select top 5 states with highest total deaths at given date
-population_density_top_states <- population_density_data %>%
+pop_dens_top_states <- population_density_data %>%
   select(State, Pop_2020)
 
-  population_density_top_states_ordered <- population_density_top_states[
-    order(population_density_data$Pop_2020, decreasing=TRUE), ]
-
-  population_density_top_states_ordered %>%
+  pop_dens_top_states_ordered <- pop_dens_top_states[
+    order(population_density_data$Pop_2020, decreasing = TRUE), ]
+  
+  pop_dens_top_states_ordered %>%
     top_n(15) %>%
     knitr::kable(col.names = c("State",
                              "Population"))
-    
 ```
 **Table 3**: Top 15 states with highest total population in 2020.
 
