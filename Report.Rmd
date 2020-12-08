@@ -345,37 +345,34 @@ two_timeseries_plot_death_test
 # load population data
 population_density_data <- readr::read_csv(params$pop_density_data)
 
-{
-  # import death data using a function state_covid_death
-  all_state_data <- all_state_covid_data()
+# import death data using a function state_covid_death
+all_state_data <- all_state_covid_data()
 
-  # take the input date and select rows matching it
-  states_data_chosen_date <- all_state_data %>%
-    select(date, state, death) %>%
-    dplyr::filter(`date` == params$chosen_date)
+# take the input date and select rows matching it
+states_data_chosen_date <- all_state_data %>%
+  select(date, state, death) %>%
+  dplyr::filter(`date` == params$chosen_date)
 
-  # reorder data to show the states with the most deaths first
-  state_death_date_ordered <- states_data_chosen_date[
-    order(states_data_chosen_date$death, decreasing = TRUE), ]
+# reorder data to show the states with the most deaths first
+state_death_date_ordered <- states_data_chosen_date[
+  order(states_data_chosen_date$death, decreasing = TRUE), ]
 
-  # take top 5 states with the highest mortality for future plotting as list
-  state_death_date_five <- state_death_date_ordered %>% top_n(5)
+# take top 5 states with the highest mortality for future plotting as list
+state_death_date_five <- state_death_date_ordered %>% top_n(5)
 
-  # create list to test if Texas is included in the data frame
-  list_state_death_date_five <- as.list(state_death_date_five$state)
+# create list to test if Texas is included in the data frame
+list_state_death_date_five <- as.list(state_death_date_five$state)
 
-  # if TX is not part of the selected states, add TX data to data frame
-  if ("TX" %in% list_state_death_date_five) {
-    state_death_date_five_tx <- state_death_date_five
-    } else {
-      df_tx <- subset(state_death_date_ordered, state == "TX")
-      state_death_date_five_tx <- rbind(state_death_date_five, df_tx)
-    }
+# if TX is not part of the selected states, add TX data to data frame
+if ("TX" %in% list_state_death_date_five) {
+  state_death_date_five_tx <- state_death_date_five
+  } else {
+    df_tx <- subset(state_death_date_ordered, state == "TX")
+    state_death_date_five_tx <- rbind(state_death_date_five, df_tx)
+  }
 
-  # this list is used in the graphs related to population density
-  list_state_death_date_five_tx <- as.list(state_death_date_five_tx$state)
-
-}
+# this list is used in the graphs related to population density
+list_state_death_date_five_tx <- as.list(state_death_date_five_tx$state)
 
 # select top 5 states with highest total deaths at given date
 pop_dens_top_five_states <- population_density_data %>%
