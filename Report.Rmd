@@ -84,8 +84,6 @@ library("knitr")
 function_paths <- list.files("code/functions", full.names = TRUE)
 purrr::walk(function_paths, source)
 
-knitr::include_graphics(c("output/figures/sars_cov_2_genes_plot.png", "output/figures/top5DeathTX_pop_total_vs_density_plots_on_2020-11-30.png", "output/figures/top5DeathTX_two_timeseries_plot_deathIncrease_positiveIncrease_on_2020-11-30.png", "output/figures/top5TX_deaths_by_State_on_2020-11-30.png", "output/figures/top5TX_hospitalized_by_State_on_2020-11-30.png", "output/figures/top5TX_positive_by_State_on_2020-11-30.png"))
-
 ```
 
 ```{r load-vcf-data}
@@ -109,13 +107,13 @@ vcf_with_metadata <- add_genes_metadata_to_vcfstack(
 
 ```
 
-The US states with the highest populations in 2020 are: CA, TX, FL, NY, PA, IL \@ref(tab:top15-population-density-table). The US states with the highest population density are: DC, NJ, RI, MI, CT \@ref(tab:top15-total-population-table). States with the most cumulative deaths as of November 30, 2020 are: NY, TX, CA, FL, NJ. (See Figure  \@ref(fig:total-deaths-plot)) This looks like the total population might be related to the total number of deaths related to COVID-19. As most of those states with high mortality are close to the ocean they contradict findings done in Japan, where lower mortality rates were observed for higher temperature and absolute humidity [@pmid32751311]. Looking into humidity and average temperature data in the United States would provide more incite. States with most hospitalizations up to selected date are: NY, FL, NJ, GA, OH. (See Figure \@ref(fig:total-hospital-plot)) Note: there was no hospitalization data for Texas provided in the API. States with most positive test results up to selected date are: CA, TX, FL, IL, NY. (See Figure \@ref(fig:total-positive-plot)
+The US states with the highest populations in 2020 are: CA, TX, FL, NY, PA, IL. (See Table \@ref(tab:top15-population-density-table)) The US states with the highest population density are: DC, NJ, RI, MI, CT. (See Table \@ref(tab:top15-total-population-table)) States with the most cumulative deaths as of November 30, 2020 are: NY, TX, CA, FL, NJ. (See Figure \@ref(fig:total-deaths-plot)) This looks like the total population might be related to the total number of deaths related to COVID-19. As most of those states with high mortality are close to the ocean they contradict findings done in Japan, where lower mortality rates were observed for higher temperature and absolute humidity [@pmid32751311]. Looking into humidity and average temperature data in the United States would provide more incite. States with most hospitalizations up to selected date are: NY, FL, NJ, GA, OH. (See Figure \@ref(fig:total-hospital-plot)) Note: there was no hospitalization data for Texas provided in the API. States with most positive test results up to selected date are: CA, TX, FL, IL, NY. (See Figure \@ref(fig:total-positive-plot))
 
 It seems like the population density is not directly related  to the spread of COVID-19. It might be helpful to look at the data on county or city level to determine if the population density contributed to the spread of COVID-19. However, it's been shown that the spread of the disease has moderate association with population density based studies done on India's COVID-19 data [@pmid33072850]. Another study showed no statistically significant relationship between the spread of the disease and population density [@ValevD]. As the number of positive tests increases, so does the number of dead people in the state. (See Figure \@ref(fig:increase-death-positive-test-plots)) This finding is similar to that presented in another paper advocating closest relationship of Deaths per million population and total Cases per million population [@ValevD]. Based on total population similarities with California and New York, Texas's relationship to COVID-19 is very similar. It would be interesting to compare the humidity, and temperature data in the future.
 
 Most of the states enforced stay at home order starting in March 2020 and extending until April or May. There are studies suggesting that the systematic and early implementation of preventive and control measures for at least 2 months reduces the number of cases [@kumaravel_2020]. However, on the time series plot we can see rise in COVID-19 cases in CA, TX and FL after July. This could be due to American celebration of Independence Day, July 4th. On the other hand, we can see that NY and NJ didn't have a spike in COVID-19 cases. (See Figure \@ref(fig:increase-death-positive-test-plots)). This could be due to strict lockdown regulations enforced by NY mayor with high monetary fines [@NYC_COVID_19].  Full civil cooperation in voluntary isolation seems to reduce the spread of the disease. 
 
-The variant analysis of SARS-CoV-2 sequencing data from Texas shows highest number of SNPs variants in S (spike glycoprotein) and N (nucleocapsid phosphoprotein) genes. (See Figure  \@ref(fig:unique-SNPs-plot)) This could be due to the relatively large size of those two genes comparing to the other ones \@ref(tab:sars-cov-2-genes-table). This finding is consistent with the published variant analysis of SARS-CoV-2 genomes [@koyama2020variant]. 
+The variant analysis of SARS-CoV-2 sequencing data from Texas shows highest number of SNPs variants in S (spike glycoprotein) and N (nucleocapsid phosphoprotein) genes. (See Figure  \@ref(fig:unique-SNPs-plot)) This could be due to the relatively large size of those two genes comparing to the other ones. (See Table \@ref(tab:sars-cov-2-genes-table)) This finding is consistent with the published variant analysis of SARS-CoV-2 genomes [@koyama2020variant]. 
 
 # Figures
 ```{r unique-SNPs-plot, fig.cap = "N and S genes have more unique SNPs in the set of samples analyzed."}
@@ -143,7 +141,7 @@ sars_cov_2_genes_plot
 
 ```
 
-**Figure 1**: N and S genes have more unique SNPs in the set of samples analyzed.
+**Figure 1:** N and S genes have more unique SNPs in the set of samples analyzed.
 
 
 ``` {r total-deaths-plot, fig.height=6, fig.cap = "The bar plot of the top 5 US States (including Texas) with the highest total number of COVID-19 related deaths on given date."}
@@ -200,8 +198,7 @@ top_state_death_plot
 
 ```
 
-**Figure 2**: The bar plot of the top 5 US States (including Texas) with the highest total number of COVID-19 related deaths on given date.
-
+**Figure 2:** The bar plot of the top 5 US States (including Texas) with the highest total number of COVID-19 related deaths on given date.
 
 ``` {r total-hospital-plot, fig.height=6, fig.cap = "The bar plot of the top 5 US States (including Texas) with the highest cumulative number of COVID-19 related hospitalizations on given date. Note: there is no hospitalization data available for Texas."}
 # import hospitalization data using a function all_state_covid_data
@@ -257,7 +254,7 @@ top_state_hospital_plot
 
 ```
 
-**Figure 3**: The bar plot of the top 5 US States (including Texas) with the highest cumulative number of COVID-19 related hospitalizations on given date. Note: there is no hospitalization data available for Texas.
+**Figure 3:** The bar plot of the top 5 US States (including Texas) with the highest cumulative number of COVID-19 related hospitalizations on given date. Note: there is no hospitalization data available for Texas.
 
 
 ``` {r total-positive-plot, fig.height=6, fig.cap = "The bar plot of the top 5 US States (including Texas) with the highest cumulative number of COVID-19 positive test results."}
@@ -314,8 +311,7 @@ top_state_positive_plot
 
 ```
 
-**Figure 4**: The bar plot of the top 5 US States (including Texas) with the highest cumulative number of COVID-19 positive test results.
-
+**Figure 4:** The bar plot of the top 5 US States (including Texas) with the highest cumulative number of COVID-19 positive test results.
 
 ``` {r increase-death-positive-test-plots, fig.height=10, fig.cap = "Top graph is a time series plots of mortality increase and bottom graph is a time series of COVID-19 positive tests increase for the top 5 US States (including Texas) with the highest cumulative number of COVID-19 related deaths on given date."}
 # take previously
@@ -367,8 +363,7 @@ two_timeseries_plot_death_test
 
 ```
 
-**Figure 5**: Top graph is a time series plots of mortality increase and bottom graph is a time series of COVID-19 positive tests increase for the top 5 US States (including Texas) with the highest cumulative number of COVID-19 related deaths on given date.
-
+**Figure 5:** Top graph is a time series plots of mortality increase and bottom graph is a time series of COVID19 positive tests increase for the top 5 US States (including Texas) with the highest cumulative number of COVID-19 related deaths on given date.
 
 ``` {r population-and-density-plot, fig.height=8, fig.cap = "Top graph shows total US population in 2020 for select 5 states that have high number of deaths up to select date. Bottom graph shows population density in 2020 of the related 5 states with the high number of deaths up to selected date."}
 # load population data
@@ -443,8 +438,7 @@ pop_total_vs_density_plots
 
 ```
 
-**Figure 6**: Top graph shows total US population in 2020 for select 5 states that have high number of deaths up to select date. Bottom graph shows population density in 2020 of the related 5 states with the high number of deaths up to selected date.
-
+**Figure 6:** Top graph shows total US population in 2020 for select 5 states that have high number of deaths up to select date. Bottom graph shows population density in 2020 of the related 5 states with the high number of deaths up to selected date.
 
 # Tables
 ```{r sars-cov-2-genes-table}
