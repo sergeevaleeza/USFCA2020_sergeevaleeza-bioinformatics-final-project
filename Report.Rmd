@@ -18,7 +18,6 @@ knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE,
                       message = FALSE,
                       error = TRUE)
-
 ```
 
 # Background and Overview
@@ -115,6 +114,7 @@ Most of the states enforced stay at home order starting in March 2020 and extend
 
 The variant analysis of SARS-CoV-2 sequencing data from Texas shows highest number of SNPs variants in S (spike glycoprotein) and N (nucleocapsid phosphoprotein) genes. (See Figure  \@ref(fig:unique-SNPs-plot)) This could be due to the relatively large size of those two genes comparing to the other ones. (See Table \@ref(tab:sars-cov-2-genes-table)) This finding is consistent with the published variant analysis of SARS-CoV-2 genomes [@koyama2020variant]. 
 
+
 # Figures
 ```{r unique-SNPs-plot, fig.cap = "N and S genes have more unique SNPs in the set of samples analyzed."}
 # create a plot of unique SNP locations within each gene across all samples
@@ -142,7 +142,6 @@ sars_cov_2_genes_plot
 ```
 
 **Figure 1:** N and S genes have more unique SNPs in the set of samples analyzed.
-
 
 ``` {r total-deaths-plot, fig.height=6, fig.cap = "The bar plot of the top 5 US States (including Texas) with the highest total number of COVID-19 related deaths on given date."}
 # import death data using a function state_covid_death
@@ -255,7 +254,6 @@ top_state_hospital_plot
 ```
 
 **Figure 3:** The bar plot of the top 5 US States (including Texas) with the highest cumulative number of COVID-19 related hospitalizations on given date. Note: there is no hospitalization data available for Texas.
-
 
 ``` {r total-positive-plot, fig.height=6, fig.cap = "The bar plot of the top 5 US States (including Texas) with the highest cumulative number of COVID-19 positive test results."}
 # import all data using a function all_state_covid_data
@@ -440,6 +438,7 @@ pop_total_vs_density_plots
 
 **Figure 6:** Top graph shows total US population in 2020 for select 5 states that have high number of deaths up to select date. Bottom graph shows population density in 2020 of the related 5 states with the high number of deaths up to selected date.
 
+
 # Tables
 ```{r sars-cov-2-genes-table}
 # An example table to show the length of each gene using its start and end
@@ -452,8 +451,8 @@ knitr::kable(col.names = c("Gene Name",
                             "Length"),
                caption = "SARS-CoV-2 Gene Names, Locations, and Lengths")
 ```
-**Table 1**: Gene names, locations, and lengths in the SARS-CoV-2 genome. Higher SNP counts in the S and N genes may be related to the larger size of these genes.
 
+**Table 1**: Gene names, locations, and lengths in the SARS-CoV-2 genome. Higher SNP counts in the S and N genes may be related to the larger size of these genes.
 
 ``` {r top15-population-density-table}
 
@@ -475,8 +474,8 @@ pop_dens_top_states_ordered %>%
                caption = "Top 15 US States With
                Highest Population Density in 2020")
 ```
-**Table 2**: Top 15 states with highest population densities in 2020.
 
+**Table 2**: Top 15 states with highest population densities in 2020.
 
 ``` {r top15-total-population-table}
 
@@ -497,8 +496,8 @@ pop_top_states_ordered %>%
                              "Population"),
                caption = "Top 15 US States With Highest Population in 2020")
 ```
-**Table 3**: Top 15 states with highest total population in 2020.
 
+**Table 3**: Top 15 states with highest total population in 2020.
 
 
 # Sources Cited
